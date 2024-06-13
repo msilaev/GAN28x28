@@ -1,0 +1,21 @@
+name: gan-tutorial
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11.0
+  - cudatoolkit
+  - cudnn
+  - pip
+  - pip:
+    - torch
+    - torchvision
+    - torchaudio
+    - numpy
+    - pandas
+    - scipy
+    - librosa
+    - h5py
+    - matplotlib
+    - tqdm
