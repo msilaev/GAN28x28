@@ -41,8 +41,6 @@ class Generator(nn.Module):
         # Hout = (Hin - 1)×stride − 2×padding + kernel_size
 
         self.main = nn.Sequential(
-            # input is Z, going into a convolution
-
             # Hout = (Hin - 1)×stride − 2×padding + kernel_size
             # dim, channels, kernel, stride, padding
             # Hin = 1, stride = 1, padding = 0,  kernel_size = 4
@@ -147,8 +145,8 @@ if __name__ == '__main__':
     discriminator = Discriminator().to(device)
     discriminator.apply(weights_init)
 
-    train = pd.read_csv('train.csv')
-    dataset = DatasetMNIST(file_path='train.csv',
+    train = pd.read_csv('data/train.csv')
+    dataset = DatasetMNIST(file_path='data/train.csv',
                            transform=transforms.Compose( [ transforms.ToTensor(),
                             transforms.Normalize([0.5], [0.5])] ) )
 
@@ -193,6 +191,9 @@ if __name__ == '__main__':
     #########################################
     n_epochs = 10
     iteration = 0
+
+    d_loss_arr=[]
+    g_loss_arr = []
     for epoch in range(n_epochs):
         for i, (imgs, _) in enumerate(dataloader,0):
 
@@ -250,6 +251,9 @@ if __name__ == '__main__':
             D_G_z2 = output.mean().item()
             optimizer_G.step()
 
+            d_loss_arr.append(d_loss.item())
+            g_loss_arr.append(g_loss.item())
+
             if ((iteration + 1) %100) == 0:
 
                 print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
@@ -299,4 +303,18 @@ for nrow, ncol in itertools.product(range(ncols // 2), range(nrows)):
 
 plt.savefig ("results/dataset_im_fin.png")
 
+plt.show()
+
+d_loss_arr = np.array(d_loss_arr)
+g_loss_arr = np.array(g_loss_arr)
+
+plt.figure(figsize=(10,5))
+plt.title("Generator and Discriminator Loss During Training")
+plt.plot(g_loss_arr,label="G")
+plt.plot(d_loss_arr,label="D")
+plt.xlabel("iterations")
+plt.ylabel("Loss")
+plt.legend()
+
+plt.savefig ("results/loss.png")
 plt.show()
