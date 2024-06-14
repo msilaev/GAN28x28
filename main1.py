@@ -186,6 +186,7 @@ if __name__ == '__main__':
 
         axes[ncol][nrow+2].imshow(fake.permute(0, 2, 3, 1)[ncol * nrow + nrow], cmap='gray')
         axes[ncol][nrow+1].axis('off')
+    plt.savefig ("results/dataset_im_start.png")
     plt.show()
 
 
@@ -295,4 +296,7 @@ for nrow, ncol in itertools.product(range(ncols // 2), range(nrows)):
 
     axes[ncol][nrow + 2].imshow(fake.permute(0, 2, 3, 1)[ncol * nrow + nrow], cmap='gray')
     axes[ncol][nrow + 1].axis('off')
+
+plt.savefig ("results/dataset_im_fin.png")
+
 plt.show()
