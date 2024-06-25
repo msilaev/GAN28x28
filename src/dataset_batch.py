@@ -1,4 +1,6 @@
 from torch.utils.data import Dataset
+import pandas as pd
+import numpy as np
 
 class DatasetMNIST(Dataset):  # inherit abstract class - 'Dataset'
 

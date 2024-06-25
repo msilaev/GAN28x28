@@ -47,6 +47,7 @@ if __name__ == '__main__':
     latent_dim = 100  # suggested default. dimensionality of the latent space
 
     batch_size = 64  # suggested default, size of the batches
+    num_classes = 10
 
     #--------
     # learning parameters
@@ -84,8 +85,8 @@ if __name__ == '__main__':
     discriminator = Discriminator().to(device)
     discriminator.apply(weights_init)
 
-    train = pd.read_csv('data/train.csv')
-    dataset = DatasetMNIST(file_path='data/train.csv',
+    train = pd.read_csv('../data/train.csv')
+    dataset = DatasetMNIST(file_path='../data/train.csv',
                            transform=transforms.Compose( [ transforms.ToTensor(),
                             transforms.Normalize([0.5], [0.5])] ) )
 
@@ -94,16 +95,19 @@ if __name__ == '__main__':
     optimizer_G = torch.optim.Adam(generator.parameters(), lr = lr, betas = (b1, b2))
     optimizer_D = torch.optim.Adam(discriminator.parameters(), lr = lr, betas = (b1, b2))
 
-    fixed_noise = torch.randn(64, latent_dim, 1, 1, device=device)
+    fixed_noise = torch.randn(batch_size, latent_dim, 1, 1, device=device)
+    fixed_labels = torch.randint(0, num_classes, (batch_size,), device=device)
 
-    #--------
+    # --------
     # plot untrained generator output
-    #--------
-    real_batch = next(iter(dataloader))[0]
+    # --------
+    real_batch = next(iter(dataloader))
+    real_imgs = real_batch[0]
+    real_labels = real_batch[1]
     with torch.no_grad():
         fake = generator(fixed_noise).detach().cpu()
-    fname = "results_gan/dataset_im_start.png"
-    plot_results(fname, real_batch, fake)
+    fname = "../results_gan/dataset_im_start.png"
+    plot_results(fname, real_imgs, real_labels, fake, fixed_labels)
 
     # ------------
     # Save computational graph in folder \result
@@ -182,24 +186,36 @@ if __name__ == '__main__':
             d_loss_arr.append(d_loss.item())
             g_loss_arr.append(g_loss.item())
 
-            if ((iteration + 1) %100) == 0:
+            if ((iteration + 1) %500) == 0:
 
                 print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
                           % (epoch, n_epochs, i, len(dataloader),
                              d_loss.item(), g_loss.item(), D_x, D_G_z1, D_G_z2))
 
-                nrows = 5
-                ncols = 5
-                fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 8))
-                plt.suptitle('EPOCH : {} | BATCH(ITERATION) : {}'.format(epoch + 1, i + 1))
+                #nrows = 6
+                #ncols = 1
+                #fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 8))
+                #plt.suptitle('EPOCH : {} | BATCH(ITERATION) : {}'.format(epoch + 1, i + 1))
 
                 with torch.no_grad():
                     fake = generator(fixed_noise).detach().cpu()
 
-                for nrow, ncol in itertools.product( range(ncols), range(nrows)):
+                #for nrow, ncol in itertools.product( range(ncols), range(nrows)):
 
-                    axes[ncol][nrow].imshow(fake.permute(0, 2, 3, 1)[ncol*nrow + nrow], cmap='gray')
-                    axes[ncol][nrow].axis('off')
+                #    axes[ncol][nrow].imshow(fake.permute(0, 2, 3, 1)[ncol*nrow + nrow], cmap='gray')
+                #    axes[ncol][nrow].axis('off')
+
+                ncols = 6
+                fig, axes = plt.subplots(ncols=ncols, figsize=(8, 8))
+                plt.suptitle('EPOCH : {} | BATCH(ITERATION) : {}'.format(epoch + 1, i + 1))
+
+                for ncol in range(ncols):
+
+                    axes[ncol].imshow(fake.permute(0, 2, 3, 1)[ncol], cmap='gray')
+                    axes[ncol].axis('off')
+                    axes[ncol].set_title('fake, ' + str(fixed_labels[ncol].item()))
+                    axes[ncol].set_title('fake, ' + str(fixed_labels[ncol].item()))
+
                 plt.show(block = False)
                 plt.pause(2)
 
@@ -215,8 +231,8 @@ if __name__ == '__main__':
 real_batch = next(iter(dataloader))[0]
 with torch.no_grad():
     fake = generator(fixed_noise).detach().cpu()
-fname = "results_conditional_gan/dataset_im_fin.png"
-plot_results(fname, real_batch, fake)
+fname = "../results_gan/dataset_im_fin.png"
+plot_results(fname, real_batch, real_labels, fake, fixed_labels)
 
 # ------------
 # plot learning curve
@@ -232,5 +248,5 @@ plt.xlabel("iterations")
 plt.ylabel("Loss")
 plt.legend()
 
-plt.savefig ("results_conditional_gan/loss.png")
+plt.savefig ("../results_gan/loss.png")
 plt.show()

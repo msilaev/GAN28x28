@@ -108,8 +108,8 @@ if __name__ == '__main__':
                                   image_size = image_size).to(device)
     discriminator.apply(weights_init)
 
-    train = pd.read_csv('data/train.csv')
-    dataset = DatasetMNIST(file_path = 'data/train.csv',
+    train = pd.read_csv('../data/train.csv')
+    dataset = DatasetMNIST(file_path = '../data/train.csv',
                            transform = transforms.Compose( [transforms.ToTensor(),
                             transforms.Normalize([0.5], [0.5])]))
 
@@ -147,11 +147,13 @@ if __name__ == '__main__':
     # --------
     # plot untrained generator output
     # --------
-    real_batch = next(iter(dataloader))[0]
+    real_batch = next(iter(dataloader))
+    real_imgs = real_batch[0]
+    real_labels = real_batch[1]
     with torch.no_grad():
-        fake = generator(fixed_noise).detach().cpu()
-    fname = "results_conditional_gan/dataset_im_start.png"
-    plot_results(fname, real_batch, fake)
+        fake = generator(fixed_noise, fixed_labels).detach().cpu()
+    fname = "../results_conditional_gan/dataset_im_start.png"
+    plot_results(fname, real_imgs, real_labels, fake, fixed_labels)
 
     # --------
     # save the computation graph in folder
@@ -238,29 +240,41 @@ if __name__ == '__main__':
             d_loss_arr.append(d_loss.item())
             g_loss_arr.append(g_loss.item())
 
-            if ((iteration + 1) %100) == 0:
+            if ((iteration + 1) %500) == 0:
 
                 print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
                           % (epoch, n_epochs, i, len(dataloader),
                              d_loss.item(), g_loss.item(), D_x, D_G_z1, D_G_z2))
 
-                nrows = 5
-                ncols = 4
+                #nrows = 1
+                #ncols = 6
 
-                fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 8))
-                plt.suptitle('EPOCH : {} | BATCH(ITERATION) : {}'.format(epoch + 1, i + 1))
+                #fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 8))
+                #plt.suptitle('EPOCH : {} | BATCH(ITERATION) : {}'.format(epoch + 1, i + 1))
 
                 with torch.no_grad():
                     fake = generator(fixed_noise, fixed_labels).detach().cpu()
 
-                for nrow, ncol in itertools.product(range(ncols), range(nrows)):
+                #for nrow, ncol in itertools.product(range(ncols), range(nrows)):
 
-                    axes[ncol][nrow].imshow(fake.permute(0, 2, 3, 1)[ncol*nrow + nrow], cmap='gray')
-                    axes[ncol][nrow].axis('off')
-                    axes[ncol][nrow].set_title('fake, ' + str(fixed_labels[ncol*nrow + nrow].item()))
+                #    axes[ncol][nrow].imshow(fake.permute(0, 2, 3, 1)[ncol*nrow + nrow], cmap='gray')
+                #    axes[ncol][nrow].axis('off')
+                #    axes[ncol][nrow].set_title('fake, ' + str(fixed_labels[ncol*nrow + nrow].item()))
+                #plt.show(block = False)
+                #plt.pause(2)
+
+                ncols = 6
+                fig, axes = plt.subplots(ncols=ncols, figsize=(8, 8))
+                plt.suptitle('EPOCH : {} | BATCH(ITERATION) : {}'.format(epoch + 1, i + 1))
+
+                for ncol in range(ncols):
+
+                    axes[ncol].imshow(fake.permute(0, 2, 3, 1)[ncol], cmap='gray')
+                    axes[ncol].axis('off')
+                    axes[ncol].set_title('fake, ' + str(fixed_labels[ncol].item()))
+
                 plt.show(block = False)
                 plt.pause(2)
-
                 plt.close()
         print(
             "[Epoch: %d/%d] [Batch: %d/%d] [D loss: %f] [G loss: %f]"
@@ -270,11 +284,13 @@ if __name__ == '__main__':
     # --------
     # plot trained generator output
     # --------
-    real_batch = next(iter(dataloader))[0]
+    real_batch = next(iter(dataloader))
+    real_imgs = real_batch[0]
+    real_labels = real_batch[1]
     with torch.no_grad():
-        fake = generator(fixed_noise).detach().cpu()
-    fname = "results_conditional_gan/dataset_im_fin.png"
-    plot_results(fname, real_batch, fake)
+        fake = generator(fixed_noise, fixed_labels).detach().cpu()
+    fname = "../results_conditional_gan/dataset_im_fin.png"
+    plot_results(fname, real_imgs, real_labels, fake, fixed_labels)
 
     # --------
     # plot learning curves
@@ -290,7 +306,7 @@ if __name__ == '__main__':
     plt.ylabel("Loss")
     plt.legend()
 
-    plt.savefig ("results_conditional_gan/loss.png")
+    plt.savefig ("../results_conditional_gan/loss.png")
     plt.show()
 
     # --------
